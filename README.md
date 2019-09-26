@@ -38,7 +38,11 @@ In order to automatically populate the backend and easily test it, a second prog
 * `GET /players/{id}/stats`: list all available stats from a player by providing the player id
 * `PUT /players/{id}/stats/{id}`: increment by 1 the stat of a player by providing the stat id
 
-## Backend Installation
+## Backend Usage
+
+1. get the `osmo_test` binary file sent by email
+1. launch it. For example on Linux open the terminal and launch `./osmo_test` in console.
+1. the backend is now running at the following address `http://127.0.0.1:8000`, and can be consumed through curl, Postman, an internet browser...
 
 ## Driver Usage
 
