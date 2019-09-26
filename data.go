@@ -1,6 +1,6 @@
 package main
 
-// Team represents gaming team of players
+// Team represents a gaming team of players
 type Team struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
