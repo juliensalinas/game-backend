@@ -102,15 +102,13 @@ func playerDeletionHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	// Look for the right team
-	for _, t := range teams {
+	for i, t := range teams {
 		if t.ID == vars["teamId"] {
-			// Look for the right player in this team and remove him
-			for i, p := range t.Players {
-				if p.ID == vars["id"] {
-					t.Players = append(t.Players[:i], t.Players[i+1:]...)
-					w.Write([]byte("Player successfully deleted"))
-					return
-				}
+			ok, _ := t.RemovePlayer(vars["playerId"])
+			if ok {
+				teams[i] = t
+				w.Write([]byte("Player successfully deleted"))
+				return
 			}
 		}
 	}
@@ -193,6 +191,8 @@ func main() {
 	r.HandleFunc("/teams/{id}/players", playerCreationHandler).Methods("POST")
 	r.HandleFunc("/teams/{teamId}/players/{playerId}", playerDeletionHandler).Methods("DELETE")
 	r.HandleFunc("/games", gameCreationHandler).Methods("POST")
+	// r.HandleFunc("/games/{id}", gameStopHandler).Methods("DELETE")
+	// r.HandleFunc("/games", gamesListingHandler).Methods("GET")
 
 	// Start HTTP server
 	log.Fatal(http.ListenAndServe(":8000", r))

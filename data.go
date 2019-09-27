@@ -21,6 +21,19 @@ func (t *Team) AddPlayer(p Player) []Player {
 	return t.Players
 }
 
+// RemovePlayer removes a player from the team and reports
+// whether player removal was successful or not
+func (t *Team) RemovePlayer(id string) (bool, []Player) {
+	// Look for the right player in this team and remove him
+	for i, p := range t.Players {
+		if p.ID == id {
+			t.Players = append(t.Players[:i], t.Players[i+1:]...)
+			return true, t.Players
+		}
+	}
+	return false, t.Players
+}
+
 // Game represents a game matching 2 teams of equal sizes
 // with a limited duration
 type Game struct {
