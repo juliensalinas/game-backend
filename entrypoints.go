@@ -95,6 +95,23 @@ func playerCreationHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// playerDeletionHandler deletes a player based on the player id received
+func playerDeletionHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	for i, p := range players {
+		if p.ID == vars["id"] {
+			players = append(players[:i], players[i+1:]...)
+			w.Write([]byte("Player successfully deleted"))
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("Player not found"))
+}
+
+// playersListingHandler displays all players
 func playersListingHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(players)
@@ -107,6 +124,7 @@ func main() {
 	r.HandleFunc("/teams/{id}", teamDeletionHandler).Methods("DELETE")
 	r.HandleFunc("/teams", teamsListingHandler).Methods("GET")
 	r.HandleFunc("/teams/{id}/players", playerCreationHandler).Methods("POST")
+	r.HandleFunc("/players/{id}", playerDeletionHandler).Methods("DELETE")
 	r.HandleFunc("/players", playersListingHandler).Methods("GET")
 
 	// Start HTTP server
