@@ -1,6 +1,8 @@
 package main
 
-import "time"
+import (
+	"time"
+)
 
 // Stats represents the game statistics of a player.
 // It can be extended by adding new stats below.
@@ -13,7 +15,7 @@ type Stats struct {
 	NbAssists                int `json:"nbAssists"`
 	NbSpellCasts             int `json:"nbSpellCasts"`
 	SpellDamageDone          int `json:"spellDamageDone"`
-	TotalTimePlayedInMinutes int `json:"totalTimePlayedInMinutes"`
+	TotalTimePlayedInSeconds int `json:"totalTimePlayedInSeconds"`
 }
 
 // Player represents a game player within a team
@@ -70,9 +72,28 @@ func (g *Game) TeamSizesAreValid() bool {
 	return false
 }
 
-// Stop stops the game by filling in the stop time
+// Stop stops the game by filling in the stop time and computes the duration
+// in seconds.
+// It also updates all the players' TotalTimePlayedInSeconds stat.
 func (g *Game) Stop() {
+	// Fill the stop time
 	g.StopTime = time.Now()
+
+	// Compute the duration and convert it to seconds
+	gameDuration := int(g.StopTime.Sub(g.StartTime) / time.Second)
+
+	// Update all the players TotalTimePlayedInSeconds stat
+	var players1, players2 []Player
+	for _, p := range g.Team1.Players {
+		p.Stats.TotalTimePlayedInSeconds = p.Stats.TotalTimePlayedInSeconds + gameDuration
+		players1 = append(players1, p)
+	}
+	g.Team1.Players = players1
+	for _, p := range g.Team2.Players {
+		p.Stats.TotalTimePlayedInSeconds = p.Stats.TotalTimePlayedInSeconds + gameDuration
+		players2 = append(players2, p)
+	}
+	g.Team2.Players = players2
 }
 
 var teams []Team

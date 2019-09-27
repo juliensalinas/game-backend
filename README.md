@@ -35,7 +35,7 @@ In order to automatically populate the backend and easily test it, a second prog
 ### Stats
 
 * `GET /players/{id}/stats`: list all available stats from a player by providing the player id
-* `PUT /games/{gameId}/players/{playerId}/stats` with `name` parameter: increment by 1 the stat of a player in a game by providing the stat name (choices are: `nbAttemptedAttacks`, `nbHits`, `damageDone`, `nbKills`, `nbFirstHitKills`, `nbAssists`, `nbSpellCasts`, `spellDamageDone`, `totalTimePlayedInMinutes`)
+* `PUT /games/{gameId}/players/{playerId}/stats` with `name` parameter: increment by 1 the stat of a player in a game by providing the stat name (choices are: `nbAttemptedAttacks`, `nbHits`, `damageDone`, `nbKills`, `nbFirstHitKills`, `nbAssists`, `nbSpellCasts`, `spellDamageDone`)
 
 ## Backend Usage
 
@@ -47,6 +47,6 @@ In order to automatically populate the backend and easily test it, a second prog
 
 ## TODO
 
-Implement the possibility for a player to move to another team or play another game.
+Implement the possibility for a player to move to another team or play another game (which would reinitialize his personal stats, but the player stats inside a game would be kept).
 Check that the same user is not in the 2 teams at the same time during a game.
 Check that the same user is not playing 2 games at the same time.

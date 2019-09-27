@@ -193,6 +193,7 @@ func gameStopHandler(w http.ResponseWriter, r *http.Request) {
 		if g.ID == vars["id"] {
 			g.Stop()
 			games[i] = g
+
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(g)
 			return
@@ -210,6 +211,8 @@ func gamesListingHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // incrementStatHandler increments a specific player stat mentioned as a parameter.
+// All stats can me incremented except the totalTimePlayedInMinutes stat which is
+// calculated automatically when a game is stopped.
 // It also updates the game accordingly, so the stats for this player are recorded
 // in the game forever.
 // If the game is stopped, stats cannot be incremented.
@@ -265,7 +268,6 @@ func incrementStatHandler(w http.ResponseWriter, r *http.Request) {
 						p.Stats.NbSpellCasts++
 					case "spellDamageDone":
 						p.Stats.SpellDamageDone++
-					case "totalTimePlayedInMinutes":
 					default:
 						w.WriteHeader(http.StatusBadRequest)
 						w.Write([]byte("Stat could not be incremented because of malformed PUT parameter"))
