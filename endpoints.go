@@ -296,7 +296,29 @@ func incrementStatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("Game of player could not be found"))
+	w.Write([]byte("Game or player could not be found"))
+}
+
+// statsListingHandler lists all the stats for a player
+func statsListingHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	for _, g := range games {
+		if g.ID == vars["gameId"] {
+			players := g.Team1.Players
+			players = append(players, g.Team2.Players...)
+			for _, p := range players {
+				if p.ID == vars["playerId"] {
+					w.Header().Set("Content-Type", "application/json")
+					json.NewEncoder(w).Encode(p.Stats)
+				}
+			}
+		}
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("Game or player could not be found"))
+
 }
 
 func main() {
@@ -311,6 +333,7 @@ func main() {
 	r.HandleFunc("/games/{id}", gameStopHandler).Methods("DELETE")
 	r.HandleFunc("/games", gamesListingHandler).Methods("GET")
 	r.HandleFunc("/games/{gameId}/players/{playerId}/stats", incrementStatHandler).Methods("PUT")
+	r.HandleFunc("/games/{gameId}/players/{playerId}/stats", statsListingHandler).Methods("GET")
 
 	// Start HTTP server
 	log.Fatal(http.ListenAndServe(":8000", r))
