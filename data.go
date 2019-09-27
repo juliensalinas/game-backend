@@ -120,6 +120,9 @@ func (g *Game) Stop() {
 		if p.Stats.TotalNbGamesPlayed >= 1000 {
 			p.Achievements.Veteran = true
 		}
+		if p.Stats.TotalNbWins >= 200 {
+			p.Achievements.BigWinner = true
+		}
 
 		players1 = append(players1, p)
 	}
@@ -136,6 +139,10 @@ func (g *Game) Stop() {
 		if p.Stats.TotalNbGamesPlayed >= 1000 {
 			p.Achievements.Veteran = true
 		}
+		if p.Stats.TotalNbWins >= 200 {
+			p.Achievements.BigWinner = true
+		}
+
 		players2 = append(players2, p)
 	}
 	g.Team2.Players = players2
