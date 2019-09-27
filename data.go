@@ -93,6 +93,26 @@ func (g *Game) TeamSizesAreValid() bool {
 	return false
 }
 
+// calculateGlobalStatsAndAchievements calculates all the achievements plus the
+// global stats (i.e. stats not related to one single game only)
+func calculateGlobalStatsAndAchievements(p Player, gameDuration int) Player {
+	p.Stats.TotalTimePlayedInSeconds = p.Stats.TotalTimePlayedInSeconds + gameDuration
+	p.Stats.TotalNbGamesPlayed++
+	if p.Stats.NbHits != 0 && float64(p.Stats.NbHits/p.Stats.NbAttemptedAttacks) >= 0.75 {
+		p.Achievements.Sharpshooter = true
+	}
+	if p.Stats.DamageDone+p.Stats.SpellDamageDone >= 500 {
+		p.Achievements.Bruiser = true
+	}
+	if p.Stats.TotalNbGamesPlayed >= 1000 {
+		p.Achievements.Veteran = true
+	}
+	if p.Stats.TotalNbWins >= 200 {
+		p.Achievements.BigWinner = true
+	}
+	return p
+}
+
 // Stop stops the game by filling in the stop time and computes the duration
 // in seconds.
 // It also updates all the players' TotalTimePlayedInSeconds, TotalNbGamesPlayed
@@ -109,40 +129,12 @@ func (g *Game) Stop() {
 	// and calculate their achievements
 	var players1, players2 []Player
 	for _, p := range g.Team1.Players {
-		p.Stats.TotalTimePlayedInSeconds = p.Stats.TotalTimePlayedInSeconds + gameDuration
-		p.Stats.TotalNbGamesPlayed++
-		if p.Stats.NbHits != 0 && float64(p.Stats.NbHits/p.Stats.NbAttemptedAttacks) >= 0.75 {
-			p.Achievements.Sharpshooter = true
-		}
-		if p.Stats.DamageDone+p.Stats.SpellDamageDone >= 500 {
-			p.Achievements.Bruiser = true
-		}
-		if p.Stats.TotalNbGamesPlayed >= 1000 {
-			p.Achievements.Veteran = true
-		}
-		if p.Stats.TotalNbWins >= 200 {
-			p.Achievements.BigWinner = true
-		}
-
+		calculateGlobalStatsAndAchievements(p, gameDuration)
 		players1 = append(players1, p)
 	}
 	g.Team1.Players = players1
 	for _, p := range g.Team2.Players {
-		p.Stats.TotalTimePlayedInSeconds = p.Stats.TotalTimePlayedInSeconds + gameDuration
-		p.Stats.TotalNbGamesPlayed++
-		if p.Stats.NbHits != 0 && float64(p.Stats.NbHits/p.Stats.NbAttemptedAttacks) >= 0.75 {
-			p.Achievements.Sharpshooter = true
-		}
-		if p.Stats.DamageDone+p.Stats.SpellDamageDone >= 500 {
-			p.Achievements.Bruiser = true
-		}
-		if p.Stats.TotalNbGamesPlayed >= 1000 {
-			p.Achievements.Veteran = true
-		}
-		if p.Stats.TotalNbWins >= 200 {
-			p.Achievements.BigWinner = true
-		}
-
+		calculateGlobalStatsAndAchievements(p, gameDuration)
 		players2 = append(players2, p)
 	}
 	g.Team2.Players = players2
