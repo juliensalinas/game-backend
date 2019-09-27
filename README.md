@@ -45,8 +45,10 @@ In order to automatically populate the backend and easily test it, a second prog
 
 ## Driver Usage
 
+In progress
+
 ## TODO
 
-Implement the possibility for a player to move to another team or play another game (which would reinitialize his personal stats except the total time played, but the player stats inside a game would be kept).
-Check that the same user is not in the 2 teams at the same time during a game.
-Check that the same user is not playing 2 games at the same time.
+* Implement the possibility for a player to move to another team or play another game (which would reinitialize his personal stats except the total time played, but the player stats inside a game would be kept).
+* Check that the same user is not in the 2 teams at the same time during a game.
+* Check that the same user is not playing 2 games at the same time.
