@@ -299,7 +299,7 @@ func incrementStatHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Game or player could not be found"))
 }
 
-// statsListingHandler lists all the stats for a player
+// statsListingHandler lists all the stats for a player in a game
 func statsListingHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -318,7 +318,25 @@ func statsListingHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("Game or player could not be found"))
+}
 
+// achievementsListingHandler lists all the achievements for a player in a game
+// once a game is done
+func achievementsListingHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	for _, g := range games {
+		if g.ID == vars["gameId"] {
+			players := g.Team1.Players
+			players = append(players, g.Team2.Players...)
+			for _, p := range players {
+				if p.ID == vars["playerId"] {
+					w.Header().Set("Content-Type", "application/json")
+					json.NewEncoder(w).Encode(p.Achievements)
+				}
+			}
+		}
+	}
 }
 
 func main() {
@@ -334,6 +352,7 @@ func main() {
 	r.HandleFunc("/games", gamesListingHandler).Methods("GET")
 	r.HandleFunc("/games/{gameId}/players/{playerId}/stats", incrementStatHandler).Methods("PUT")
 	r.HandleFunc("/games/{gameId}/players/{playerId}/stats", statsListingHandler).Methods("GET")
+	r.HandleFunc("/games/{gameId}/players/{playerId}/achievements", achievementsListingHandler).Methods("GET")
 
 	// Start HTTP server
 	log.Fatal(http.ListenAndServe(":8000", r))
