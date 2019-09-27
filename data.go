@@ -86,8 +86,7 @@ type Game struct {
 // TeamSizesAreValid checks that game teams have the right size (3 to 5 players)
 // and both the same size
 func (g *Game) TeamSizesAreValid() bool {
-	// TODO(juliensalinas): switch 1 to 3
-	if len(g.Team1.Players) == len(g.Team2.Players) && len(g.Team1.Players) <= 5 && len(g.Team1.Players) >= 1 {
+	if len(g.Team1.Players) == len(g.Team2.Players) && len(g.Team1.Players) <= 5 && len(g.Team1.Players) >= 3 {
 		return true
 	}
 	return false

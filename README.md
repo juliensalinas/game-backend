@@ -5,7 +5,7 @@ This is a Go backend for an external game.
 In order for this backend to easily interface with any external game developped in any language (in a microservice spirit), this backend is built as a RESTful API.
 The following elements can be managed through the API: players, teams, games, achievements, and stats.
 
-Achievements and statistics are admin operations so they cannot be extended through the API but it can be done manually by altering the `achievements.json` and `stats.json` config files.
+Achievements and statistics are admin operations so they cannot be extended through the API but they can be easily added to their corresponding structs in `data.go`.
 
 In order to automatically populate the backend and easily test it, a second program called `driver` is made available.
 
