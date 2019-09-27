@@ -5,7 +5,7 @@ This is a Go backend for an external game.
 In order for this backend to easily interface with any external game developped in any language (in a microservice spirit), this backend is built as a RESTful API.
 The following elements can be managed through the API: players, teams, games, achievements, and stats.
 
-Achievements and statistics cannot be extended through the API but it can be done manually by altering tje `achievements.json` and `stats.json` config files.
+Achievements and statistics are admin operations so they cannot be extended through the API but it can be done manually by altering the `achievements.json` and `stats.json` config files.
 
 In order to automatically populate the backend and easily test it, a second program called `driver` is made available.
 
@@ -20,7 +20,7 @@ In order to automatically populate the backend and easily test it, a second prog
 ### Players
 
 * `POST /teams/{id}/players` with `pseudo` parameter: create a player and affect him to a team by providing a pseudo and a team id, and return the player created
-* `DELETE /teams/{id}/players/{id}`: remove a player by providing his id and its team id
+* `DELETE /teams/{teamId}/players/{playerId}`: remove a player by providing his id and its team id
 
 ### Games
 
@@ -35,7 +35,7 @@ In order to automatically populate the backend and easily test it, a second prog
 ### Stats
 
 * `GET /players/{id}/stats`: list all available stats from a player by providing the player id
-* `PUT /players/{id}/stats/{id}`: increment by 1 the stat of a player by providing the stat id
+* `PUT /games/{gameId}/players/{playerId}/stats` with `name` parameter: increment by 1 the stat of a player in a game by providing the stat name (choices are: `nbAttemptedAttacks`, `nbHits`, `damageDone`, `nbKills`, `nbFirstHitKills`, `nbAssists`, `nbSpellCasts`, `spellDamageDone`, `totalTimePlayedInMinutes`)
 
 ## Backend Usage
 
@@ -45,3 +45,8 @@ In order to automatically populate the backend and easily test it, a second prog
 
 ## Driver Usage
 
+## TODO
+
+Implement the possibility for a player to move to another team or play another game.
+Check that the same user is not in the 2 teams at the same time during a game.
+Check that the same user is not playing 2 games at the same time.

@@ -2,10 +2,25 @@ package main
 
 import "time"
 
+// Stats represents the game statistics of a player.
+// It can be extended by adding new stats below.
+type Stats struct {
+	NbAttemptedAttacks       int `json:"nbAttemptedAttacks"`
+	NbHits                   int `json:"nbHits"`
+	DamageDone               int `json:"damageDone"`
+	NbKills                  int `json:"nbKills"`
+	NbFirstHitKills          int `json:"nbFirstHitKills"`
+	NbAssists                int `json:"nbAssists"`
+	NbSpellCasts             int `json:"nbSpellCasts"`
+	SpellDamageDone          int `json:"spellDamageDone"`
+	TotalTimePlayedInMinutes int `json:"totalTimePlayedInMinutes"`
+}
+
 // Player represents a game player within a team
 type Player struct {
 	ID     string `json:"id"`
 	Pseudo string `json:"pseudo"`
+	Stats  Stats  `json:"stats"`
 }
 
 // Team represents a gaming team of players
@@ -48,6 +63,7 @@ type Game struct {
 // TeamSizesAreValid checks that game teams have the right size (3 to 5 players)
 // and both the same size
 func (g *Game) TeamSizesAreValid() bool {
+	// TODO(juliensalinas): switch 1 to 3
 	if len(g.Team1.Players) == len(g.Team2.Players) && len(g.Team1.Players) <= 5 && len(g.Team1.Players) >= 1 {
 		return true
 	}

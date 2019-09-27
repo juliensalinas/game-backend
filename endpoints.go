@@ -209,6 +209,85 @@ func gamesListingHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(games)
 }
 
+// incrementStatHandler increments a specific player stat mentioned as a parameter.
+// It also updates the game accordingly, so the stats for this player are recorded
+// in the game forever.
+func incrementStatHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Stat could not be incremented because of malformed PUT parameters"))
+		return
+	}
+	name := r.Form.Get("name")
+	if name == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Stat could not be incremented because of empty PUT parameter"))
+		return
+	}
+
+	vars := mux.Vars(r)
+
+	// Look for the right game
+	for i, g := range games {
+		if g.ID == vars["gameId"] {
+			// Concatenate the 2 teams into 1 for easier player search
+			players := g.Team1.Players
+			players = append(players, g.Team2.Players...)
+			// Look for the righ player in one of the 2 teams
+			for _, p := range players {
+				if p.ID == vars["playerId"] {
+					// If the PUT parameter matches an existing stat, increment it and leave.
+					// Otherwise return an error.
+					switch name {
+					case "nbAttemptedAttacks":
+						p.Stats.NbAttemptedAttacks++
+					case "nbHits":
+						p.Stats.NbHits++
+					case "damageDone":
+						p.Stats.DamageDone++
+					case "nbKills":
+						p.Stats.NbKills++
+					case "nbFirstHitKills":
+						p.Stats.NbFirstHitKills++
+					case "nbAssists":
+						p.Stats.NbAssists++
+					case "nbSpellCasts":
+						p.Stats.NbSpellCasts++
+					case "spellDamageDone":
+						p.Stats.SpellDamageDone++
+					case "totalTimePlayedInMinutes":
+					default:
+						w.WriteHeader(http.StatusBadRequest)
+						w.Write([]byte("Stat could not be incremented because of malformed PUT parameter"))
+						return
+					}
+
+					// Update the player team and game with the new stats
+					for k, p1 := range g.Team1.Players {
+						if p.ID == p1.ID {
+							g.Team1.Players[k] = p
+						}
+					}
+					for k, p1 := range g.Team2.Players {
+						if p.ID == p1.ID {
+							g.Team2.Players[k] = p
+						}
+					}
+					games[i] = g
+
+					w.Header().Set("Content-Type", "application/json")
+					json.NewEncoder(w).Encode(p)
+					return
+				}
+			}
+		}
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("Game of player could not be found"))
+}
+
 func main() {
 	// Declare HTTP routes
 	r := mux.NewRouter()
@@ -220,6 +299,7 @@ func main() {
 	r.HandleFunc("/games", gameCreationHandler).Methods("POST")
 	r.HandleFunc("/games/{id}", gameStopHandler).Methods("DELETE")
 	r.HandleFunc("/games", gamesListingHandler).Methods("GET")
+	r.HandleFunc("/games/{gameId}/players/{playerId}/stats", incrementStatHandler).Methods("PUT")
 
 	// Start HTTP server
 	log.Fatal(http.ListenAndServe(":8000", r))
