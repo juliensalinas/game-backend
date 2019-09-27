@@ -103,6 +103,7 @@ func playerDeletionHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Look for the right team
 	for i, t := range teams {
+		// Look for the right player and remove him if found
 		if t.ID == vars["teamId"] {
 			ok, _ := t.RemovePlayer(vars["playerId"])
 			if ok {
@@ -136,7 +137,7 @@ func gameCreationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create the game and set a starting time
-	g := Game{Name: name, StartTime: time.Now()}
+	g := Game{ID: uuid.New().String(), Name: name, StartTime: time.Now()}
 
 	// Affect team 1 and team 2 to the game.
 	// If at least of the teams cannot be found, stop here and return an error.
@@ -182,6 +183,32 @@ func gameCreationHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// gameStopHandler stops a game by setting a stop time
+func gameStopHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	// Look for the right game
+	for i, g := range games {
+		// Stop the game if found
+		if g.ID == vars["id"] {
+			g.Stop()
+			games[i] = g
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(g)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("Team or player not found"))
+}
+
+// gamesListingHandler returns a json encoded list of all the games
+func gamesListingHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(games)
+}
+
 func main() {
 	// Declare HTTP routes
 	r := mux.NewRouter()
@@ -191,8 +218,8 @@ func main() {
 	r.HandleFunc("/teams/{id}/players", playerCreationHandler).Methods("POST")
 	r.HandleFunc("/teams/{teamId}/players/{playerId}", playerDeletionHandler).Methods("DELETE")
 	r.HandleFunc("/games", gameCreationHandler).Methods("POST")
-	// r.HandleFunc("/games/{id}", gameStopHandler).Methods("DELETE")
-	// r.HandleFunc("/games", gamesListingHandler).Methods("GET")
+	r.HandleFunc("/games/{id}", gameStopHandler).Methods("DELETE")
+	r.HandleFunc("/games", gamesListingHandler).Methods("GET")
 
 	// Start HTTP server
 	log.Fatal(http.ListenAndServe(":8000", r))

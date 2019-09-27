@@ -37,20 +37,26 @@ func (t *Team) RemovePlayer(id string) (bool, []Player) {
 // Game represents a game matching 2 teams of equal sizes
 // with a limited duration
 type Game struct {
-	Team1     Team      `json: "team1"`
-	Team2     Team      `json: "team2"`
+	ID        string    `json:"id"`
+	Team1     Team      `json:"team1"`
+	Team2     Team      `json:"team2"`
 	Name      string    `json:"name"`
-	StartTime time.Time `json: "startTime"`
-	StopTime  time.Time `json: "stopTime"`
+	StartTime time.Time `json:"startTime"`
+	StopTime  time.Time `json:"stopTime"`
 }
 
 // TeamSizesAreValid checks that game teams have the right size (3 to 5 players)
 // and both the same size
 func (g *Game) TeamSizesAreValid() bool {
-	if len(g.Team1.Players) == len(g.Team2.Players) && len(g.Team1.Players) <= 5 && len(g.Team1.Players) >= 3 {
+	if len(g.Team1.Players) == len(g.Team2.Players) && len(g.Team1.Players) <= 5 && len(g.Team1.Players) >= 1 {
 		return true
 	}
 	return false
+}
+
+// Stop stops the game by filling in the stop time
+func (g *Game) Stop() {
+	g.StopTime = time.Now()
 }
 
 var teams []Team
