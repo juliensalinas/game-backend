@@ -212,6 +212,7 @@ func gamesListingHandler(w http.ResponseWriter, r *http.Request) {
 // incrementStatHandler increments a specific player stat mentioned as a parameter.
 // It also updates the game accordingly, so the stats for this player are recorded
 // in the game forever.
+// If the game is stopped, stats cannot be incremented.
 func incrementStatHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -231,9 +232,17 @@ func incrementStatHandler(w http.ResponseWriter, r *http.Request) {
 	// Look for the right game
 	for i, g := range games {
 		if g.ID == vars["gameId"] {
+			// If game is stopped, stats shouldn't be incremented
+			if !g.StopTime.IsZero() {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte("Stat could not be incremented because this game is stopped"))
+				return
+			}
+
 			// Concatenate the 2 teams into 1 for easier player search
 			players := g.Team1.Players
 			players = append(players, g.Team2.Players...)
+
 			// Look for the righ player in one of the 2 teams
 			for _, p := range players {
 				if p.ID == vars["playerId"] {
