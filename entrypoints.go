@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -67,7 +68,7 @@ func playerCreationHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Payer could not be created because of malformed POST parameters"))
+		w.Write([]byte("Player could not be created because of malformed POST parameters"))
 		return
 	}
 	pseudo := r.Form.Get("pseudo")
@@ -80,10 +81,11 @@ func playerCreationHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	// Find the correct team, create the new player, and affect him to the team
-	for _, t := range teams {
+	for i, t := range teams {
 		if t.ID == vars["id"] {
-			p := Player{Team: t, ID: uuid.New().String(), Pseudo: pseudo}
-			players = append(players, p)
+			p := Player{ID: uuid.New().String(), Pseudo: pseudo}
+			t.AddPlayer(p)
+			teams[i] = t
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(p)
 			return
@@ -99,22 +101,87 @@ func playerCreationHandler(w http.ResponseWriter, r *http.Request) {
 func playerDeletionHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	for i, p := range players {
-		if p.ID == vars["id"] {
-			players = append(players[:i], players[i+1:]...)
-			w.Write([]byte("Player successfully deleted"))
-			return
+	// Look for the right team
+	for _, t := range teams {
+		if t.ID == vars["teamId"] {
+			// Look for the right player in this team and remove him
+			for i, p := range t.Players {
+				if p.ID == vars["id"] {
+					t.Players = append(t.Players[:i], t.Players[i+1:]...)
+					w.Write([]byte("Player successfully deleted"))
+					return
+				}
+			}
 		}
 	}
 
 	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("Player not found"))
+	w.Write([]byte("Team or player not found"))
 }
 
-// playersListingHandler displays all players
-func playersListingHandler(w http.ResponseWriter, r *http.Request) {
+// gameCreationHandler creates a player and affects him to a team based
+// on the team id received
+func gameCreationHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Game could not be created because of malformed POST parameters"))
+		return
+	}
+	name := r.Form.Get("name")
+	team1Id := r.Form.Get("team1Id")
+	team2Id := r.Form.Get("team2Id")
+	if name == "" || team1Id == "" || team2Id == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Game could not be created because of empty POST parameter"))
+		return
+	}
+
+	// Create the game and set a starting time
+	g := Game{Name: name, StartTime: time.Now()}
+
+	// Affect team 1 and team 2 to the game.
+	// If at least of the teams cannot be found, stop here and return an error.
+	for _, t := range teams {
+		if t.ID == team1Id {
+			g.Team1 = t
+		}
+	}
+	if g.Team1.ID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("No team 1 could be found with this id"))
+		return
+	}
+	for _, t := range teams {
+		if t.ID == team2Id {
+			g.Team2 = t
+		}
+	}
+	if g.Team2.ID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("No team 1 could be found with this id"))
+		return
+	}
+
+	// Check that teams are not equal
+	if g.Team1.ID == g.Team2.ID {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("The teams should not be equal"))
+		return
+	}
+
+	// Check team sizes
+	if !g.TeamSizesAreValid() {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("The teams should have from 3 to 5 players and have the same size"))
+		return
+	}
+
+	games = append(games, g)
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(players)
+	json.NewEncoder(w).Encode(g)
+
 }
 
 func main() {
@@ -124,8 +191,8 @@ func main() {
 	r.HandleFunc("/teams/{id}", teamDeletionHandler).Methods("DELETE")
 	r.HandleFunc("/teams", teamsListingHandler).Methods("GET")
 	r.HandleFunc("/teams/{id}/players", playerCreationHandler).Methods("POST")
-	r.HandleFunc("/players/{id}", playerDeletionHandler).Methods("DELETE")
-	r.HandleFunc("/players", playersListingHandler).Methods("GET")
+	r.HandleFunc("/teams/{teamId}/players/{playerId}", playerDeletionHandler).Methods("DELETE")
+	r.HandleFunc("/games", gameCreationHandler).Methods("POST")
 
 	// Start HTTP server
 	log.Fatal(http.ListenAndServe(":8000", r))

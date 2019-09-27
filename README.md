@@ -13,20 +13,20 @@ In order to automatically populate the backend and easily test it, a second prog
 
 ### Teams
 
-* `POST /teams` with `name` parameter: create a team by providing a team name, and returns the team id of the team created
+* `POST /teams` with `name` parameter: create a team by providing a team name, and return the team created
 * `DELETE /teams/{id}`: delete a team by providing its team id
-* `GET /teams`: list all team names
+* `GET /teams`: list all teams
 
 ### Players
 
-* `POST /teams/{id}/players` with `pseudo` parameter: create a player and affect him to a team by providing a pseudo and a team id, and return the player id of the player created
-* `DELETE /players/{id}`: remove a player by providing his id
-* `GET /players` (GET): list all players from a team by providing a team id
+* `POST /teams/{id}/players` with `pseudo` parameter: create a player and affect him to a team by providing a pseudo and a team id, and return the player created
+* `DELETE /teams/{id}/players/{id}`: remove a player by providing his id and its team id
 
 ### Games
 
-* `POST /games` with `team1Id` and `team2Id` parameters: create a new game and affect 2 teams to this game by providing their team ids, and returns the game id of the game created
+* `POST /games` with `name`, `team1Id` and `team2Id` parameters: create a new game by giving a name and affect 2 teams to this game by providing their team ids, and return the game created
 * `DELETE /games/{id}`: stop a game by providing the game id
+* `GET /games`: list all games
 
 ### Achievements
 
