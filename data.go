@@ -6,13 +6,12 @@ type Team struct {
 	Name string `json:"name"`
 }
 
-var teams = []Team{
-	{
-		ID:   "1",
-		Name: "Amazing team",
-	},
-	{
-		ID:   "2",
-		Name: "Amazing team 2",
-	},
+// Player represents a game player within a team
+type Player struct {
+	Team   `json:"team"`
+	ID     string `json:"id"`
+	Pseudo string `json:"pseudo"`
 }
+
+var teams []Team
+var players []Player

@@ -9,7 +9,6 @@ Achievements and statistics cannot be extended through the API but it can be don
 
 In order to automatically populate the backend and easily test it, a second program called `driver` is made available.
 
-
 ## API Endpoints Available
 
 ### Teams
