@@ -183,14 +183,42 @@ func gameCreationHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// gameStopHandler stops a game by setting a stop time
+// gameStopHandler stops a game by setting a stop time.
+// It also declares which team won.
 func gameStopHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Game could not be stoped because of malformed PUT parameters"))
+		return
+	}
+	teamID := r.Form.Get("teamId")
+	if teamID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Game could not be created because of empty PUT parameter"))
+		return
+	}
+
 	vars := mux.Vars(r)
 
 	// Look for the right game
 	for i, g := range games {
 		// Stop the game if found
 		if g.ID == vars["id"] {
+			// If winning team id provided matches no team, stop here
+			if teamID != g.Team1.ID || teamID != g.Team2.ID {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte("Winning team not found"))
+			}
+
+			// Increment the TotalNbWins of the players of the winning team
+			if teamID == g.Team1.ID {
+				g.Team1.MarkAsWinner()
+			} else {
+				g.Team2.MarkAsWinner()
+			}
+
+			// Stop the game
 			g.Stop()
 			games[i] = g
 
@@ -348,7 +376,7 @@ func main() {
 	r.HandleFunc("/teams/{id}/players", playerCreationHandler).Methods("POST")
 	r.HandleFunc("/teams/{teamId}/players/{playerId}", playerDeletionHandler).Methods("DELETE")
 	r.HandleFunc("/games", gameCreationHandler).Methods("POST")
-	r.HandleFunc("/games/{id}", gameStopHandler).Methods("DELETE")
+	r.HandleFunc("/games/{id}", gameStopHandler).Methods("PUT")
 	r.HandleFunc("/games", gamesListingHandler).Methods("GET")
 	r.HandleFunc("/games/{gameId}/players/{playerId}/stats", incrementStatHandler).Methods("PUT")
 	r.HandleFunc("/games/{gameId}/players/{playerId}/stats", statsListingHandler).Methods("GET")

@@ -25,6 +25,8 @@ type Stats struct {
 	NbSpellCasts             int `json:"nbSpellCasts"`
 	SpellDamageDone          int `json:"spellDamageDone"`
 	TotalTimePlayedInSeconds int `json:"totalTimePlayedInSeconds"`
+	TotalNbGamesPlayed       int `json:"totalNbGamesPlayed"`
+	TotalNbWins              int `json:"totalNbGamesWins"`
 }
 
 // Player represents a game player within a team
@@ -61,6 +63,15 @@ func (t *Team) RemovePlayer(id string) (bool, []Player) {
 	return false, t.Players
 }
 
+// MarkAsWinner increments all the TotalNbWins of the players
+// of the team
+func (t *Team) MarkAsWinner() []Player {
+	for _, p := range t.Players {
+		p.Stats.TotalNbWins++
+	}
+	return t.Players
+}
+
 // Game represents a game matching 2 teams of equal sizes
 // with a limited duration
 type Game struct {
@@ -84,7 +95,8 @@ func (g *Game) TeamSizesAreValid() bool {
 
 // Stop stops the game by filling in the stop time and computes the duration
 // in seconds.
-// It also updates all the players' TotalTimePlayedInSeconds stat.
+// It also updates all the players' TotalTimePlayedInSeconds, TotalNbGamesPlayed
+// and TotalNbWins stat.
 // It also calculates all the players achievements.
 func (g *Game) Stop() {
 	// Fill the stop time
@@ -93,27 +105,36 @@ func (g *Game) Stop() {
 	// Compute the duration and convert it to seconds
 	gameDuration := int(g.StopTime.Sub(g.StartTime) / time.Second)
 
-	// Update all the players TotalTimePlayedInSeconds stat
+	// Update all the players TotalTimePlayedInSeconds and TotalNbGamesPlayed stats
 	// and calculate their achievements
 	var players1, players2 []Player
 	for _, p := range g.Team1.Players {
 		p.Stats.TotalTimePlayedInSeconds = p.Stats.TotalTimePlayedInSeconds + gameDuration
+		p.Stats.TotalNbGamesPlayed++
 		if p.Stats.NbHits != 0 && float64(p.Stats.NbHits/p.Stats.NbAttemptedAttacks) >= 0.75 {
 			p.Achievements.Sharpshooter = true
 		}
 		if p.Stats.DamageDone+p.Stats.SpellDamageDone >= 500 {
 			p.Achievements.Bruiser = true
 		}
+		if p.Stats.TotalNbGamesPlayed >= 1000 {
+			p.Achievements.Veteran = true
+		}
+
 		players1 = append(players1, p)
 	}
 	g.Team1.Players = players1
 	for _, p := range g.Team2.Players {
 		p.Stats.TotalTimePlayedInSeconds = p.Stats.TotalTimePlayedInSeconds + gameDuration
+		p.Stats.TotalNbGamesPlayed++
 		if p.Stats.NbHits != 0 && float64(p.Stats.NbHits/p.Stats.NbAttemptedAttacks) >= 0.75 {
 			p.Achievements.Sharpshooter = true
 		}
 		if p.Stats.DamageDone+p.Stats.SpellDamageDone >= 500 {
 			p.Achievements.Bruiser = true
+		}
+		if p.Stats.TotalNbGamesPlayed >= 1000 {
+			p.Achievements.Veteran = true
 		}
 		players2 = append(players2, p)
 	}

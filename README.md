@@ -25,7 +25,7 @@ In order to automatically populate the backend and easily test it, a second prog
 ### Games
 
 * `POST /games` with `name`, `team1Id` and `team2Id` parameters: create a new game by giving a name and affect 2 teams to this game by providing their team ids, and return the game created
-* `DELETE /games/{id}`: stop a game by providing the game id (the game is just stopped, not deleted)
+* `PUT /games/{id}` with `teamId` parameter: stop a game by providing the game id and the team id of the winning team
 * `GET /games`: list all games
 
 ### Achievements
