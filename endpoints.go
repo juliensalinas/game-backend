@@ -13,7 +13,7 @@ import (
 // teamCreationHandler creates a new team based on the team name provided by user.
 // The team id is a randomly generated id.
 func teamCreationHandler(w http.ResponseWriter, r *http.Request) {
-	// Retrieve user new team name as a multipart form POST
+	// Retrieve user new team name as a form urlencoded POST parameter
 	err := r.ParseForm()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
