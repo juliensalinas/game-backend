@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -39,7 +40,7 @@ func TestTeamCreationHandler(t *testing.T) {
 	// Check the response body is what we expect.
 	var team Team
 	json.Unmarshal([]byte(rr.Body.String()), &team)
-	// Team ID should be not empty
+	// Team id should be not empty
 	if team.ID == "" {
 		t.Errorf("handler returned unexpected team name in body: got %v want %v",
 			team.ID, "")
@@ -49,9 +50,45 @@ func TestTeamCreationHandler(t *testing.T) {
 		t.Errorf("handler returned unexpected team name in body: got %v want %v",
 			team.Name, teamName)
 	}
-	// Team Plauers should be empty
+	// Team players should be empty
 	if team.Players != nil {
 		t.Errorf("handler returned unexpected team name in body: got %v want %v",
 			team.Players, nil)
 	}
+}
+
+func TestTeamDeletionHandler(t *testing.T) {
+	// Create a team and retrieve the newly created team
+	teamName := "Best Team Ever"
+	params := url.Values{}
+	params.Set("name", teamName)
+	req, err := http.NewRequest("POST", "/teams", strings.NewReader(params.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(teamCreationHandler)
+	handler.ServeHTTP(rr, req)
+	var team Team
+	json.Unmarshal([]byte(rr.Body.String()), &team)
+	fmt.Println(team)
+
+	// Delete the newly created team.
+	//
+	// Send the team id of the team we want to delete
+	req, err = http.NewRequest("DELETE", fmt.Sprintf("/teams/%s", team.ID), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	handler = http.HandlerFunc(teamDeletionHandler)
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
 }
