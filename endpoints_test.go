@@ -268,6 +268,22 @@ func TestGameCreationHandler(t *testing.T) {
 	}
 }
 
+// TestGamesListingHandler tests the games retrieval
+func TestGamesListingHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", "/games", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(gamesListingHandler)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+}
+
 // TestIncrementStatHandler tests the damage done stat incrementation up to 501
 func TestIncrementStatHandler(t *testing.T) {
 	for i := 1; i < 502; i++ {
@@ -306,7 +322,6 @@ func TestStatsListingHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
-
 }
 
 // TestGameStopHandler tests a game stop

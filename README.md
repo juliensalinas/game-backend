@@ -67,6 +67,7 @@ For convenience and documentation, an `AchievementsCalculator` interface also ex
 ## Tests
 
 Tests are in the `endpoints_test.go` file.
+Run the whole test file with `go test -v`.
 Running the whole test file can be considered as an end to end test. It will create 4 teams and 11 players, and then create a game of 2 teams (made up of 3 players each), increment the player 1 stats, stop the game, and retrieve the player 1's "Bruiser" achievements.
 
 ## TODO
