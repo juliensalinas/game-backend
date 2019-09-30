@@ -86,7 +86,6 @@ func (s *Stats) IncrementStats(statName string) bool {
 	default:
 		return false
 	}
-
 	return true
 }
 
