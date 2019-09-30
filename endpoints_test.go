@@ -291,6 +291,24 @@ func TestIncrementStatHandler(t *testing.T) {
 	}
 }
 
+// TestStatsListingHandler tests the stats retrieval for player 1
+func TestStatsListingHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("/games/%s/players/%s/stats", testGame1.ID, testPlayer1.ID), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	router := mux.NewRouter()
+	router.HandleFunc("/games/{gameId}/players/{playerId}/stats", statsListingHandler)
+	router.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+}
+
 // TestGameStopHandler tests a game stop
 func TestGameStopHandler(t *testing.T) {
 	teamID := fmt.Sprintf(testTeam1.ID)
