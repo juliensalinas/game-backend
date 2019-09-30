@@ -5,9 +5,30 @@ This is a Go backend for an external game.
 In order for this backend to easily interface with any external game developped in any language (in a microservice spirit), this backend is built as a RESTful API.
 The following elements can be managed through the API: players, teams, games, achievements, and stats.
 
-Achievements and statistics are admin operations so they cannot be extended through the API but they can be easily added to their corresponding structs in `data.go`.
+Achievements and statistics are admin operations so they cannot be extended through the API but they can be easily extended in `data.go`. See below for more details.
 
 In order to automatically populate the backend and easily test it, a second program called `driver` is made available.
+
+## How To Extend Achievements and Statistics?
+
+### Statistics
+
+Stats can be modified (more can be added, or some can be removed) by doing the following:
+
+* modify the `Stats` struct in `data.go`
+* modify the `IncrementStats` method accordingly in `data.go`
+* (optional) modify the `CalculateGlobalStats` method in `data.go` if needed
+
+Alternatively a new type of stats can also be created and this type should implement the `StatsIncrementer` interface (found in `data.go`) in order for statistics to be properly incremented.
+
+### Achievements
+
+Achievements can be modified (more can be added, or some can be removed) by doing the following:
+
+* modify the `Achievements` struct in `data.go`
+* modify the `CalculateAchievements` method accordingly in `data.go`
+
+For convenience and documentation, an `AchievementsCalculator` interface also exists in `data.go` but is not used yet. Every new achievements types should implement this interface.
 
 ## API Endpoints Available
 

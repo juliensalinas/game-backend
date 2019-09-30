@@ -4,6 +4,11 @@ import (
 	"time"
 )
 
+// AchievementsCalculator is an interface for player achievements calculation
+type AchievementsCalculator interface {
+	Calculate(Stats)
+}
+
 // Achievements represents which achievements have been
 // reached by a player
 type Achievements struct {
@@ -11,6 +16,28 @@ type Achievements struct {
 	Bruiser      bool `json:"bruiser"`
 	Veteran      bool `json:"veteran"`
 	BigWinner    bool `json:"bigWinner"`
+}
+
+// CalculateAchievements calculates the achievements of a player
+func (a *Achievements) CalculateAchievements(stats Stats) {
+	if stats.NbHits != 0 && float64(stats.NbHits/stats.NbAttemptedAttacks) >= 0.75 {
+		a.Sharpshooter = true
+	}
+	if stats.DamageDone+stats.SpellDamageDone >= 500 {
+		a.Bruiser = true
+	}
+	if stats.TotalNbGamesPlayed >= 1000 {
+		a.Veteran = true
+	}
+	if stats.TotalNbWins >= 200 {
+		a.BigWinner = true
+	}
+}
+
+// StatsIncrementer is an interface for player stat
+// incrementation
+type StatsIncrementer interface {
+	IncrementStats(statName string) bool
 }
 
 // Stats represents the game statistics of a player.
@@ -27,6 +54,40 @@ type Stats struct {
 	TotalTimePlayedInSeconds int `json:"totalTimePlayedInSeconds"`
 	TotalNbGamesPlayed       int `json:"totalNbGamesPlayed"`
 	TotalNbWins              int `json:"totalNbGamesWins"`
+}
+
+// CalculateGlobalStats calculates the global stats that a player
+// is accumulating for his whole life
+func (s *Stats) CalculateGlobalStats(gameDuration int) {
+	s.TotalTimePlayedInSeconds = s.TotalTimePlayedInSeconds + gameDuration
+	s.TotalNbGamesPlayed++
+}
+
+// IncrementStats increments one of the player stats based on
+// the stat name provided
+func (s *Stats) IncrementStats(statName string) bool {
+	switch statName {
+	case "nbAttemptedAttacks":
+		s.NbAttemptedAttacks++
+	case "nbHits":
+		s.NbHits++
+	case "damageDone":
+		s.DamageDone++
+	case "nbKills":
+		s.NbKills++
+	case "nbFirstHitKills":
+		s.NbFirstHitKills++
+	case "nbAssists":
+		s.NbAssists++
+	case "nbSpellCasts":
+		s.NbSpellCasts++
+	case "spellDamageDone":
+		s.SpellDamageDone++
+	default:
+		return false
+	}
+
+	return true
 }
 
 // Player represents a game player within a team
@@ -92,26 +153,6 @@ func (g *Game) TeamSizesAreValid() bool {
 	return false
 }
 
-// calculateGlobalStatsAndAchievements calculates all the achievements plus the
-// global stats (i.e. stats not related to one single game only)
-func calculateGlobalStatsAndAchievements(p Player, gameDuration int) Player {
-	p.Stats.TotalTimePlayedInSeconds = p.Stats.TotalTimePlayedInSeconds + gameDuration
-	p.Stats.TotalNbGamesPlayed++
-	if p.Stats.NbHits != 0 && float64(p.Stats.NbHits/p.Stats.NbAttemptedAttacks) >= 0.75 {
-		p.Achievements.Sharpshooter = true
-	}
-	if p.Stats.DamageDone+p.Stats.SpellDamageDone >= 500 {
-		p.Achievements.Bruiser = true
-	}
-	if p.Stats.TotalNbGamesPlayed >= 1000 {
-		p.Achievements.Veteran = true
-	}
-	if p.Stats.TotalNbWins >= 200 {
-		p.Achievements.BigWinner = true
-	}
-	return p
-}
-
 // Stop stops the game by filling in the stop time and computes the duration
 // in seconds.
 // It also updates all the players' TotalTimePlayedInSeconds, TotalNbGamesPlayed
@@ -128,16 +169,19 @@ func (g *Game) Stop() {
 	// and calculate their achievements
 	var players1, players2 []Player
 	for _, p := range g.Team1.Players {
-		calculateGlobalStatsAndAchievements(p, gameDuration)
+		p.Stats.CalculateGlobalStats(gameDuration)
+		p.Achievements.CalculateAchievements(p.Stats)
 		players1 = append(players1, p)
 	}
 	g.Team1.Players = players1
 	for _, p := range g.Team2.Players {
-		calculateGlobalStatsAndAchievements(p, gameDuration)
+		p.Stats.CalculateGlobalStats(gameDuration)
+		p.Achievements.CalculateAchievements(p.Stats)
 		players2 = append(players2, p)
 	}
 	g.Team2.Players = players2
 }
 
+// Init current list of teams and list of games
 var teams []Team
 var games []Game

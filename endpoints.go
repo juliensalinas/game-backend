@@ -238,6 +238,11 @@ func gamesListingHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(games)
 }
 
+// incrementStat increments a player stat
+func incrementStat(s StatsIncrementer, statName string) bool {
+	return s.IncrementStats(statName)
+}
+
 // incrementStatHandler increments a specific player stat mentioned as a parameter.
 // All stats can me incremented except the totalTimePlayedInMinutes stat which is
 // calculated automatically when a game is stopped.
@@ -277,26 +282,10 @@ func incrementStatHandler(w http.ResponseWriter, r *http.Request) {
 			// Look for the righ player in one of the 2 teams
 			for _, p := range players {
 				if p.ID == vars["playerId"] {
-					// If the PUT parameter matches an existing stat, increment it and leave.
+					// If the PUT parameter matches an existing stat, increment it.
 					// Otherwise return an error.
-					switch name {
-					case "nbAttemptedAttacks":
-						p.Stats.NbAttemptedAttacks++
-					case "nbHits":
-						p.Stats.NbHits++
-					case "damageDone":
-						p.Stats.DamageDone++
-					case "nbKills":
-						p.Stats.NbKills++
-					case "nbFirstHitKills":
-						p.Stats.NbFirstHitKills++
-					case "nbAssists":
-						p.Stats.NbAssists++
-					case "nbSpellCasts":
-						p.Stats.NbSpellCasts++
-					case "spellDamageDone":
-						p.Stats.SpellDamageDone++
-					default:
+					ok := incrementStat(&p.Stats, name)
+					if !ok {
 						w.WriteHeader(http.StatusBadRequest)
 						w.Write([]byte("Stat could not be incremented because of malformed PUT parameter"))
 						return
