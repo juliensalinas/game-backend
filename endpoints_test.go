@@ -187,9 +187,6 @@ func TestTeamsListingHandler(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
-
-	fmt.Println("Created teams:")
-	fmt.Println(rr.Body.String())
 }
 
 // TestGameCreationHandler tests successfull creation and start of a game

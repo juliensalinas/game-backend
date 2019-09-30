@@ -7,7 +7,7 @@ The following elements can be managed through the API: players, teams, games, ac
 
 Achievements and statistics are admin operations so they cannot be extended through the API but they can be easily extended in `data.go`. See below for more details.
 
-In order to automatically populate the backend and easily test it, a second program called `driver` is made available.
+In order to automatically populate the backend and easily test it, the tests are pretty comprehensive. See below.
 
 ## How To Extend Achievements and Statistics?
 
@@ -64,9 +64,10 @@ For convenience and documentation, an `AchievementsCalculator` interface also ex
 1. launch it. For example on Linux open the terminal and launch `./osmo_test` in console.
 1. the backend is now running at the following address `http://127.0.0.1:8000`, and can be consumed through curl, Postman, an internet browser...
 
-## Driver Usage
+## Tests
 
-In progress
+Tests are in the `endpoints_test.go` file.
+Running the whole test file can be considered as an end to end test. It will create 4 teams and 11 players, and then create a game of 2 teams (made up of 3 players each), increment the player 1 stats, stop the game, and retrieve the player 1's "Bruiser" achievements.
 
 ## TODO
 
