@@ -62,9 +62,24 @@ func TestTeamCreationHandler(t *testing.T) {
 	}
 }
 
+func TestTeamsListingHandler(t *testing.T) {
+	req, err := http.NewRequest("GET", "/teams", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(teamsListingHandler)
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+}
+
 func TestTeamDeletionHandler(t *testing.T) {
-	// Delete the newly created team.
-	//
 	// Send the team id of the team we want to delete
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("/teams/%s", team1.ID), nil)
 	if err != nil {
@@ -75,10 +90,8 @@ func TestTeamDeletionHandler(t *testing.T) {
 	router.HandleFunc("/teams/{id}", teamDeletionHandler)
 	router.ServeHTTP(rr, req)
 
-	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
-
 }
