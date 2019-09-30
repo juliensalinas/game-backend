@@ -294,6 +294,27 @@ func TestIncrementStatHandler(t *testing.T) {
 	}
 }
 
+// TestGameStopHandler tests a game stop
+func TestGameStopHandler(t *testing.T) {
+	teamID := fmt.Sprintf(testTeam1.ID)
+	params := url.Values{}
+	params.Set("teamId", teamID)
+	req, err := http.NewRequest("PUT", fmt.Sprintf("/games/%s", testGame1.ID), strings.NewReader(params.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	router := mux.NewRouter()
+	router.HandleFunc("/games/{id}", gameStopHandler)
+	router.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+}
+
 // TestAchievementsListingHandler tests that the bruiser achievement was
 // properly granted to player 1
 func TestAchievementsListingHandler(t *testing.T) {

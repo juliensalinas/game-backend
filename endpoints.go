@@ -206,9 +206,10 @@ func gameStopHandler(w http.ResponseWriter, r *http.Request) {
 		// Stop the game if found
 		if g.ID == vars["id"] {
 			// If winning team id provided matches no team, stop here
-			if teamID != g.Team1.ID || teamID != g.Team2.ID {
+			if teamID != g.Team1.ID && teamID != g.Team2.ID {
 				w.WriteHeader(http.StatusNotFound)
 				w.Write([]byte("Winning team not found"))
+				return
 			}
 
 			// Increment the TotalNbWins of the players of the winning team
