@@ -372,9 +372,8 @@ func TestAchievementsListingHandler(t *testing.T) {
 	}
 }
 
-// TestTeamDeletionHandler test deletion of a team
+// TestTeamDeletionHandler tests deletion of a team
 func TestTeamDeletionHandler(t *testing.T) {
-	// Send the team id of the team we want to delete
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("/teams/%s", testTeam4.ID), nil)
 	if err != nil {
 		t.Fatal(err)
@@ -382,6 +381,23 @@ func TestTeamDeletionHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 	router := mux.NewRouter()
 	router.HandleFunc("/teams/{id}", teamDeletionHandler)
+	router.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+}
+
+// TestPlayerDeletionHandler tests deletion of player 2
+func TestPlayerDeletionHandler(t *testing.T) {
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("/teams/%s/players/%s", testTeam1.ID, testPlayer2.ID), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	router := mux.NewRouter()
+	router.HandleFunc("/teams/{teamId}/players/{playerId}", playerDeletionHandler)
 	router.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
