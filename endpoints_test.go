@@ -8,7 +8,12 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
+
+// Global variables use to keep state accross tests
+var team1 Team
 
 func TestTeamCreationHandler(t *testing.T) {
 	// POST param to pass
@@ -38,52 +43,37 @@ func TestTeamCreationHandler(t *testing.T) {
 	}
 
 	// Check the response body is what we expect.
-	var team Team
-	json.Unmarshal([]byte(rr.Body.String()), &team)
+	json.Unmarshal([]byte(rr.Body.String()), &team1)
+
 	// Team id should be not empty
-	if team.ID == "" {
+	if team1.ID == "" {
 		t.Errorf("handler returned unexpected team name in body: got %v want %v",
-			team.ID, "")
+			team1.ID, "")
 	}
 	// Team name should be the one we passed earlier
-	if team.Name != teamName {
+	if team1.Name != teamName {
 		t.Errorf("handler returned unexpected team name in body: got %v want %v",
-			team.Name, teamName)
+			team1.Name, teamName)
 	}
 	// Team players should be empty
-	if team.Players != nil {
+	if team1.Players != nil {
 		t.Errorf("handler returned unexpected team name in body: got %v want %v",
-			team.Players, nil)
+			team1.Players, nil)
 	}
 }
 
 func TestTeamDeletionHandler(t *testing.T) {
-	// Create a team and retrieve the newly created team
-	teamName := "Best Team Ever"
-	params := url.Values{}
-	params.Set("name", teamName)
-	req, err := http.NewRequest("POST", "/teams", strings.NewReader(params.Encode()))
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	// Delete the newly created team.
+	//
+	// Send the team id of the team we want to delete
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("/teams/%s", team1.ID), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(teamCreationHandler)
-	handler.ServeHTTP(rr, req)
-	var team Team
-	json.Unmarshal([]byte(rr.Body.String()), &team)
-	fmt.Println(team)
-
-	// Delete the newly created team.
-	//
-	// Send the team id of the team we want to delete
-	req, err = http.NewRequest("DELETE", fmt.Sprintf("/teams/%s", team.ID), nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr = httptest.NewRecorder()
-	handler = http.HandlerFunc(teamDeletionHandler)
-	handler.ServeHTTP(rr, req)
+	router := mux.NewRouter()
+	router.HandleFunc("/teams/{id}", teamDeletionHandler)
+	router.ServeHTTP(rr, req)
 
 	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusOK {

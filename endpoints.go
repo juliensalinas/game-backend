@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -43,7 +42,6 @@ func teamDeletionHandler(w http.ResponseWriter, r *http.Request) {
 	// Retrieve url positional arguments
 	vars := mux.Vars(r)
 
-	fmt.Println(teams)
 	// Look for a team with the id retrieved from user and delete it
 	// if found
 	for i, t := range teams {
